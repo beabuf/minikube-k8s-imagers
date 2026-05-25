@@ -11,11 +11,11 @@ jobs:
           mkdir -p my_rpms
           cd my_rpms
           
-          # 使用 -L 跟踪所有的重定向，使用 -sS 确保稳定下载，拉取真实的 .rpm 二进制文件
-          curl -L -O https://aliyun.com
-          curl -L -O https://mirrors.aliyun.com/centos/7/os/x86_64/Packages/conntrack-tools-1.4.4-7.el7.x86_64.rpm
+          # 使用小写 -o 强行指定本地保存的绝对文件名，彻底解决命名失败的 exit code 23 错误
+          curl -L "https://aliyun.com" -o libnetfilter_cthelper-1.0.0-11.el7.x86_64.rpm
+          curl -L "https://aliyun.com" -o conntrack-tools-1.4.4-7.el7.x86_64.rpm
           
-          # 列出文件大小，方便你在 GitHub 日志中检查（真正的 RPM 应该在几十到几百 KB）
+          # 列出文件，以便你在 Actions 执行日志中直观地看到文件大小
           ls -lh
           
       - name: Pack and Upload
