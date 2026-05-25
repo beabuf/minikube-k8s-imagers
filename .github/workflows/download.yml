@@ -1,0 +1,34 @@
+name: Download and Package K8s Images
+on:
+  workflow_dispatch: # 允许在网页上手动点击触发
+
+jobs:
+  download:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Pull and Save Images
+        run: |
+          # 1. 定义你需要下载的所有 K8s 镜像组件（根据你之前的报错信息）
+          IMAGES=(
+            "registry.k8s.io/kube-apiserver:v1.35.1"
+            "registry.k8s.io/kube-controller-manager:v1.35.1"
+            "registry.k8s.io/kube-scheduler:v1.35.1"
+            "registry.k8s.io/kube-proxy:v1.35.1"
+            "registry.k8s.io/coredns/coredns:v1.13.1"
+            "registry.k8s.io/etcd:3.6.6-0"
+            "registry.k8s.io/pause:3.10.1"
+          )
+          
+          # 2. 循环拉取镜像
+          for img in "${IMAGES[@]}"; do
+            docker pull "$img"
+          done
+          
+          # 3. 强行打包成一个 tar 压缩包
+          docker save -o k8s_images.tar "${IMAGES[@]}"
+          
+      - name: Upload to Browser
+        uses: actions/upload-artifact@v4
+        with:
+          name: k8s-offline-bundle
+          path: k8s_images.tar
