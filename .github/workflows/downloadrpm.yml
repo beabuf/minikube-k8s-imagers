@@ -1,19 +1,25 @@
-name: Download RPM Tools
+name: Secure Download RPM Packages
 on:
   workflow_dispatch:
 
 jobs:
-  download-rpm:
+  get-rpms:
     runs-on: ubuntu-latest
     steps:
-      - name: Fetch RPMs
+      - name: Download Real RPM Files
         run: |
-          mkdir -p rpms
-          cd rpms
-          wget https://huaweicloud.com
-          wget https://huaweicloud.com
-      - name: Upload to Browser
+          mkdir -p my_rpms
+          cd my_rpms
+          
+          # 使用 -L 跟踪所有的重定向，使用 -sS 确保稳定下载，拉取真实的 .rpm 二进制文件
+          curl -L -O https://aliyun.com
+          curl -L -O https://mirrors.aliyun.com/centos/7/os/x86_64/Packages/conntrack-tools-1.4.4-7.el7.x86_64.rpm
+          
+          # 列出文件大小，方便你在 GitHub 日志中检查（真正的 RPM 应该在几十到几百 KB）
+          ls -lh
+          
+      - name: Pack and Upload
         uses: actions/upload-artifact@v4
         with:
-          name: conntrack-rpm-packages
-          path: rpms/
+          name: conntrack-rpm-bundle
+          path: my_rpms/
