@@ -1,0 +1,19 @@
+name: Download RPM Tools
+on:
+  workflow_dispatch:
+
+jobs:
+  download-rpm:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch RPMs
+        run: |
+          mkdir -p rpms
+          cd rpms
+          wget https://huaweicloud.com
+          wget https://huaweicloud.com
+      - name: Upload to Browser
+        uses: actions/upload-artifact@v4
+        with:
+          name: conntrack-rpm-packages
+          path: rpms/
