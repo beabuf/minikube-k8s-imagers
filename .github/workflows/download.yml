@@ -1,14 +1,20 @@
-name: Download and Package K8s Images
+name: Generate Docker Physical RootFS
 on:
-  workflow_dispatch: # 允许在网页上手动点击触发
+  workflow_dispatch:
 
 jobs:
-  download:
+  build-rootfs:
     runs-on: ubuntu-latest
     steps:
-      - name: Pull and Save Images
+      - name: Load and Extract Docker Overlay2 Data
         run: |
-          # 1. 定义你需要下载的所有 K8s 镜像组件（根据你之前的报错信息）
+          # 1. 停止系统自带的 docker 避免冲突
+          sudo systemctl stop docker
+          sudo rm -rf /var/lib/docker
+          sudo mkdir -p /var/lib/docker
+          sudo systemctl start docker
+          
+          # 2. 下载你需要的所有 K8s 核心镜像（此处包含你之前需要的组件）
           IMAGES=(
             "gcr.io/k8s-minikube/kicbase:v0.0.50"
             "registry.k8s.io/kube-apiserver:v1.35.1"
@@ -19,17 +25,17 @@ jobs:
             "registry.k8s.io/etcd:3.6.6-0"
             "registry.k8s.io/pause:3.10.1"
           )
+          for img in "${IMAGES[@]}"; do sudo docker pull "$img" || true; done
           
-          # 2. 循环拉取镜像
-          for img in "${IMAGES[@]}"; do
-            docker pull "$img"
-          done
+          # 3. 彻底停止 Docker，准备打包整个物理数据目录
+          sudo systemctl stop docker
           
-          # 3. 强行打包成一个 tar 压缩包
-          docker save -o k8s_images.tar "${IMAGES[@]}"
+          # 4. 把整个底层文件目录压缩成一个普通 tar 包
+          cd /var/lib
+          sudo tar -czf /tmp/docker_root_data.tar.gz docker/
           
       - name: Upload to Browser
         uses: actions/upload-artifact@v4
         with:
-          name: k8s-offline-bundle01
-          path: k8s_images.tar
+          name: docker-physical-data
+          path: /tmp/docker_root_data.tar.gz
